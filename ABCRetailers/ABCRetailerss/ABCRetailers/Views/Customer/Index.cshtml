@@ -1,0 +1,120 @@
+﻿@model IEnumerable<ABCRetailers.Models.Customer>
+@{
+    ViewData["Title"] = "Customers";
+}
+
+<!-- Bootstrap 5 + FontAwesome -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-primary mb-3 mb-md-0">
+            <i class="fa-solid fa-users me-2"></i>Customers
+        </h1>
+        <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">
+            <i class="fa-solid fa-user-plus me-2"></i> Add New Customer
+        </a>
+    </div>
+
+    <!-- Customers Table Section -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-primary">
+                            <tr>
+                                <th scope="col">Customer ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Surname</th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Shipping Address</th>
+                                <th scope="col" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var customer in Model)
+                            {
+                                <tr>
+                                    <td class="text-muted">
+                                        @(string.IsNullOrEmpty(customer?.Id) ? "-" : customer.Id.Substring(0, Math.Min(8, customer.Id.Length)) + "…")
+                                    </td>
+                                    <td>@customer.Name</td>
+                                    <td>@customer.Surname</td>
+                                    <td>@customer.Username</td>
+                                    <td>@customer.Email</td>
+                                    <td>@customer.ShippingAddress</td>
+                                    <td class="text-center">
+                                        <a asp-action="Edit" asp-route-id="@customer.Id"
+                                           class="btn btn-outline-primary btn-sm me-2">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal"
+                                                onclick="setDeleteData('@customer.Id', '@(customer.Name + " " + customer.Surname)')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info d-flex align-items-center shadow-sm mt-5" role="alert">
+            <i class="fa-solid fa-circle-info fa-lg me-2"></i>
+            <div>
+                No customers found.
+                <a asp-action="Create" class="fw-semibold text-decoration-none">Add your first customer</a>!
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">
+                    Are you sure you want to delete customer
+                    <strong id="customerName" class="text-dark"></strong>?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function setDeleteData(customerId, customerName) {
+            document.getElementById("customerName").textContent = customerName;
+            document.getElementById("deleteForm").action =
+                '@Url.Action("Delete", "Customer")/' + encodeURIComponent(customerId);
+        }
+    </script>
+}
